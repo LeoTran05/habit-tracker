@@ -12,13 +12,18 @@ function requireEnv(name) {
 }
 
 function loadEnv() {
+  const rawPort = (process.env.PORT || "3001").trim();
+  const port = Number(rawPort);
+
+  if (!Number.isInteger(port) || port <= 0 || port > 65535) {
+    throw new Error(`Invalid PORT env var: "${process.env.PORT}"`);
+  }
+
   return {
     NODE_ENV: process.env.NODE_ENV || "development",
-    PORT: Number(process.env.PORT || 3001),
-    // We will require these later when we introduce DB + auth:
-    // DATABASE_URL: requireEnv("DATABASE_URL"),
-    // JWT_SECRET: requireEnv("JWT_SECRET"),
+    PORT: port,
   };
 }
+
 
 module.exports = { loadEnv, requireEnv };
