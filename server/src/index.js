@@ -4,6 +4,7 @@
  */
 
 require("dotenv").config();
+console.log(process.env.DATABASE_URL);
 
 process.on("exit", (code) => console.log("PROCESS EXIT EVENT. code=", code));
 process.on("beforeExit", (code) => console.log("BEFORE EXIT EVENT. code=", code));

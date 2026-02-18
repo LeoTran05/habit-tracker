@@ -9,6 +9,7 @@ const { apiError } = require("./utils/errors");
 
 function createApp() {
   const app = express();
+  const authRoutes = require("./routes/auth.routes");
 
   app.use(cors());
   app.use(express.json());
@@ -17,6 +18,8 @@ function createApp() {
   app.get("/health", (req, res) => {
     res.json({ ok: true });
   });
+
+  app.use("/api/auth", authRoutes);
 
   // 404 handler for unknown routes
   app.use((req, res) => {

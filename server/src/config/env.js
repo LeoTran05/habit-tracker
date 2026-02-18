@@ -19,11 +19,17 @@ function loadEnv() {
     throw new Error(`Invalid PORT env var: "${process.env.PORT}"`);
   }
 
+  const DATABASE_URL = requireEnv("DATABASE_URL");
+  const JWT_SECRET = requireEnv("JWT_SECRET");
+
   return {
     NODE_ENV: process.env.NODE_ENV || "development",
     PORT: port,
+    DATABASE_URL,
+    JWT_SECRET,
   };
 }
+
 
 
 module.exports = { loadEnv, requireEnv };
