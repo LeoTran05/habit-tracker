@@ -8,7 +8,7 @@
 const express = require("express");
 const { register, login } = require("../services/auth.service");
 const { apiError } = require("../utils/errors");
-
+const { requireAuth } = require("../middleware/auth");
 const router = express.Router();
 
 // POST /api/auth/register
@@ -37,6 +37,13 @@ router.post("/login", async (req, res) => {
     return apiError(res, status, code, message);
   }
 });
+
+// /api/auth/me 
+router.get("/me", requireAuth, async (req, res) => {
+  return res.json({ user: req.user });
+});
+
+
 
 // The auth.service.js file would contain the actual logic for registering and logging in users, including database interactions and password hashing. The routes defined here simply call those service functions and handle the HTTP request/response cycle, including error handling.
 
