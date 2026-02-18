@@ -76,4 +76,55 @@ async function register(email, password) {
   }
 }
 
-module.exports = { register };
+async function login(email, password) {
+  const normalizedEmail = normalizeEmail(email);
+  const pwd = String(password || "");
+  if (!normalizedEmail || !normalizedEmail.includes("@")) {
+    const err = new Error("Invalid email");
+    err.status = 400;
+    err.code = "VALIDATION_ERROR";
+    throw err;
+  }
+  if (!pwd) {
+    const err = new Error("Password is required");
+    err.status = 400;
+    err.code = "VALIDATION_ERROR";
+    throw err;
+  }
+  
+  const rows = await query(
+    `
+    SELECT id, email, password_hash, created_at
+    FROM users
+    WHERE email = $1
+    `,
+    [normalizedEmail]
+  );
+
+  if (rows.length === 0) {
+    const err = new Error("Invalid credentials");
+    err.status = 401;
+    err.code = "INVALID_CREDENTIALS";
+    throw err;
+  }
+
+  const user = rows[0];
+  const isValidPassword = await bcrypt.compare(pwd, user.password_hash);
+
+  if (!isValidPassword) {
+    const err = new Error("Invalid credentials");
+    err.status = 401;
+    err.code = "INVALID_CREDENTIALS";
+    throw err;
+  }
+  const safeUser = {
+    id: user.id,
+    email: user.email,
+    created_at: user.created_at
+  };
+
+  const token = signToken(safeUser);
+  return { token, user: safeUser };
+} 
+
+module.exports = { register, login };
