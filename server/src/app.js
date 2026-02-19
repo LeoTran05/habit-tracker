@@ -6,6 +6,7 @@
 const express = require("express");
 const cors = require("cors");
 const { apiError } = require("./utils/errors");
+const habitsRoutes = require("./routes/habits.routes");
 
 function createApp() {
   const app = express();
@@ -20,6 +21,7 @@ function createApp() {
   });
 
   app.use("/api/auth", authRoutes);
+  app.use("/api/habits", habitsRoutes);
 
   // 404 handler for unknown routes
   app.use((req, res) => {
@@ -32,6 +34,8 @@ function createApp() {
     console.error(err);
     return apiError(res, 500, "INTERNAL_ERROR", "Something went wrong");
   });
+
+
 
   return app;
 }
