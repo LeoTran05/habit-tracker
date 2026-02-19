@@ -159,8 +159,17 @@ async function uncompleteHabit(userId, habitId, date) {
 
 } 
 
-    
-  
+async function getHabits(userId) {
+    const habits = await query(
+        `
+        SELECT id, name, frequency, created_at, archived_at
+        FROM habits
+        WHERE user_id = $1 AND archived_at IS NULL
+        ORDER BY created_at DESC
+        `,
+        [userId]
+    );
+    return habits;
+}
 
-
-module.exports = { createHabit, completeHabit, uncompleteHabit };
+module.exports = { createHabit, completeHabit, uncompleteHabit, getHabits };

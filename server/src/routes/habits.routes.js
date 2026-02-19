@@ -7,7 +7,7 @@
 
 const express = require("express");
 const { requireAuth } = require("../middleware/auth");
-const { createHabit, completeHabit, uncompleteHabit} = require("../services/habits.service");
+const { createHabit, completeHabit, uncompleteHabit, getHabits} = require("../services/habits.service");
 const { apiError } = require("../utils/errors");
 const router = express.Router();
 
@@ -67,5 +67,20 @@ router.delete("/:id/complete", requireAuth, async (req, res) => {
     return apiError(res, status, code, message);
   }
 });
+
+// GET /api/habits - Get all habits for the authenticated user
+router.get("/", requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const habits = await getHabits(userId);
+    return res.status(200).json({ habits });
+  } catch (err) {
+    const status = err.status || 500;
+    const code = err.code || "INTERNAL_ERROR";
+    const message = err.message || "Something went wrong";
+    return apiError(res, status, code, message);
+  }
+});
+
 
 module.exports = router;
