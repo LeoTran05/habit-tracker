@@ -159,6 +159,84 @@ async function uncompleteHabit(userId, habitId, date) {
 
 } 
 
+async function getHabitSummary(userId) {
+  // Helper: YYYY-MM-DD in UTC (consistent, avoids local timezone drift)
+  const toISODate = (d) => d.toISOString().slice(0, 10);
+
+  const today = new Date();
+  const to = toISODate(today);
+
+  const fromDate = new Date(today);
+  fromDate.setUTCDate(fromDate.getUTCDate() - 6); // last 7 days inclusive
+  const from = toISODate(fromDate);
+
+  // 1) Get active habits for user
+  const habits = await query(
+    `
+    SELECT id, name, frequency, created_at, archived_at
+    FROM habits
+    WHERE user_id = $1 AND archived_at IS NULL
+    ORDER BY created_at DESC
+    `,
+    [userId]
+  );
+
+  if (habits.length === 0) {
+    return { range: { from, to }, habits: [] };
+  }
+
+  const habitIds = habits.map((h) => h.id);
+
+  // 2) Get completions in date range for those habits
+  // NOTE: c.date is a DATE column. We cast to text to get "YYYY-MM-DD" consistently.
+  const completions = await query(
+    `
+    SELECT habit_id, date::text AS date
+    FROM habit_completions
+    WHERE habit_id = ANY($1::int[])
+      AND date >= $2::date
+      AND date <= $3::date
+    `,
+    [habitIds, from, to]
+  );
+
+  // Build lookup: habitId -> Set of completed dates (YYYY-MM-DD)
+  const completionMap = new Map();
+  for (const row of completions) {
+    if (!completionMap.has(row.habit_id)) {
+      completionMap.set(row.habit_id, new Set());
+    }
+    completionMap.get(row.habit_id).add(row.date);
+  }
+
+  // Build the 7-day date list (oldest -> newest)
+  const dates = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setUTCDate(d.getUTCDate() - i);
+    dates.push(toISODate(d));
+  }
+
+  // Merge into output
+  const summarized = habits.map((h) => {
+    const set = completionMap.get(h.id) || new Set();
+    const last7 = dates.map((date) => ({ date, done: set.has(date) }));
+
+    return {
+      id: h.id,
+      name: h.name,
+      frequency: h.frequency,
+      created_at: h.created_at,
+      archived_at: h.archived_at,
+      doneToday: set.has(to),
+      last7,
+    };
+  });
+
+  return { range: { from, to }, habits: summarized };
+}
+
+
 async function getHabits(userId) {
     const habits = await query(
         `
@@ -172,4 +250,4 @@ async function getHabits(userId) {
     return habits;
 }
 
-module.exports = { createHabit, completeHabit, uncompleteHabit, getHabits };
+module.exports = { createHabit, completeHabit, uncompleteHabit, getHabits, getHabitSummary };

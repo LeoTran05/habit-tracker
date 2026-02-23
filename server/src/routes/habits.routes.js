@@ -82,5 +82,19 @@ router.get("/", requireAuth, async (req, res) => {
   }
 });
 
+// Get /api/habits/summary - Get a summary of habit completions for the authenticated user
+router.get("/summary", requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const data = await getHabitSummary(userId);
+    return res.status(200).json(data);
+  } catch (err) {
+    const status = err.status || 500;
+    const code = err.code || "INTERNAL_ERROR";
+    const message = err.message || "Something went wrong";
+    return apiError(res, status, code, message);
+  }
+});
+
 
 module.exports = router;
