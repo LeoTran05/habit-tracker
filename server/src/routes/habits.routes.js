@@ -7,7 +7,7 @@
 
 const express = require("express");
 const { requireAuth } = require("../middleware/auth");
-const { createHabit, completeHabit, uncompleteHabit, getHabits} = require("../services/habits.service");
+const { createHabit, completeHabit, uncompleteHabit, getHabits, getHabitSummary} = require("../services/habits.service");
 const { apiError } = require("../utils/errors");
 const router = express.Router();
 
