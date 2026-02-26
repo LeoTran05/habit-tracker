@@ -82,11 +82,25 @@ router.get("/", requireAuth, async (req, res) => {
   }
 });
 
-// Get /api/habits/summary - Get a summary of habit completions for the authenticated user
+// GET /api/habits/summary?asOf=YYYY-MM-DD
 router.get("/summary", requireAuth, async (req, res) => {
   try {
     const userId = req.user.id;
-    const data = await getHabitSummary(userId);
+    const { asOf } = req.query || {};
+
+    // Optional validation
+    if (asOf) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(asOf) || Number.isNaN(Date.parse(asOf))) {
+        return apiError(
+          res,
+          400,
+          "VALIDATION_ERROR",
+          "Invalid asOf date format (expected YYYY-MM-DD)"
+        );
+      }
+    }
+
+    const data = await getHabitSummary(userId, asOf);
     return res.status(200).json(data);
   } catch (err) {
     const status = err.status || 500;

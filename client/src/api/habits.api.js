@@ -7,8 +7,9 @@ Each function corresponds to a specific endpoint defined in the server's routes 
 
 import { apiFetch } from "./http";
 
-export async function getHabitSummary() {
-  return apiFetch("/api/habits/summary");
+export async function getHabitSummary(asOf) {
+  const qs = asOf ? `?asOf=${encodeURIComponent(asOf)}` : "";
+  return apiFetch(`/api/habits/summary${qs}`);
 }
 
 export async function createHabit(name) {
@@ -18,15 +19,16 @@ export async function createHabit(name) {
   });
 }
 
-export async function completeHabit(habitId) {
+export async function completeHabit(habitId, date) {
   return apiFetch(`/api/habits/${habitId}/complete`, {
     method: "POST",
-    body: {}, // backend defaults to today
+    body: date ? { date } : {}, // backend defaults to today
   });
 }
 
-export async function uncompleteHabit(habitId) {
-  return apiFetch(`/api/habits/${habitId}/complete`, {
+export async function uncompleteHabit(habitId, date) {
+  const qs = date ? `?date=${encodeURIComponent(date)}` : "";
+  return apiFetch(`/api/habits/${habitId}/complete${qs}`, {
     method: "DELETE",
   });
 }

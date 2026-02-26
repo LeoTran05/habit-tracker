@@ -4,8 +4,8 @@
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: #11151C;
+  background-color: #B5D6D6;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -13,15 +13,20 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/*
+  Global styles for the app. 
+*/
 a {
   font-weight: 500;
   color: #646cff;
   text-decoration: inherit;
 }
 a:hover {
-  color: #535bf2;
+  color: #535bf2; 
 }
-
+/*
+  The body is a flex container to center the content, and has a minimum width to prevent it from getting too small on mobile. 
+*/
 body {
   margin: 0;
   display: flex;
@@ -31,8 +36,8 @@ body {
 }
 
 h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+  font-size: 4em;
+  line-height: 1.2;
 }
 
 button {
@@ -42,17 +47,45 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: #16a34a;
   cursor: pointer;
   transition: border-color 0.25s;
 }
 button:hover {
-  border-color: #646cff;
+  border-color: #11151C;
 }
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
+
+
+.habit-input {
+  width: 320px;
+  max-width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #374151;
+  border-radius: 10px;
+  background: #11151C;
+  color: #e5e7eb;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.habit-input::placeholder {
+  color: #ffffff;
+}
+
+.habit-input:focus {
+  border-color: #C6C8EE;
+  box-shadow: 0 0 0 3px #C6C8EE;
+}
+
+
+/*
+  Light mode overrides. The prefers-color-scheme media query allows us to automatically switch to light mode if the user has indicated a preference for it in their operating system settings. You can customize the colors here as you like!
+*/ 
 
 @media (prefers-color-scheme: light) {
   :root {

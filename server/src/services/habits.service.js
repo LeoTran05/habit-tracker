@@ -159,15 +159,23 @@ async function uncompleteHabit(userId, habitId, date) {
 
 } 
 
-async function getHabitSummary(userId) {
-  // Helper: YYYY-MM-DD in UTC (consistent, avoids local timezone drift)
+async function getHabitSummary(userId, asOf) {
   const toISODate = (d) => d.toISOString().slice(0, 10);
 
-  const today = new Date();
-  const to = toISODate(today);
+  let baseDate;
 
-  const fromDate = new Date(today);
-  fromDate.setUTCDate(fromDate.getUTCDate() - 6); // last 7 days inclusive
+  if (asOf) {
+    // Force UTC-safe interpretation
+    const [y, m, d] = asOf.split("-").map(Number);
+    baseDate = new Date(Date.UTC(y, m - 1, d));
+  } else {
+    baseDate = new Date();
+  }
+
+  const to = toISODate(baseDate);
+
+  const fromDate = new Date(baseDate);
+  fromDate.setUTCDate(fromDate.getUTCDate() - 6);
   const from = toISODate(fromDate);
 
   // 1) Get active habits for user
@@ -212,7 +220,7 @@ async function getHabitSummary(userId) {
   // Build the 7-day date list (oldest -> newest)
   const dates = [];
   for (let i = 6; i >= 0; i--) {
-    const d = new Date(today);
+    const d = new Date(baseDate);
     d.setUTCDate(d.getUTCDate() - i);
     dates.push(toISODate(d));
   }
