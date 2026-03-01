@@ -30,6 +30,34 @@ async function createHabit(userId, name) {
     return newHabit[0];
 } 
 
+async function deleteHabit(userId, habitId) {
+ if (!habitId || isNaN(Number(habitId))) {
+    const err = new Error("Invalid habit ID");
+    err.status = 400;
+    err.code = "VALIDATION_ERROR";
+    throw err;
+  } 
+
+  const result = await query(
+    `
+    UPDATE habits
+    SET archived_at = NOW()
+    WHERE id = $1 AND user_id = $2 AND archived_at IS NULL
+    RETURNING id;
+    `,
+    [habitId, userId]
+  );
+
+  if (result.length === 0) {
+    const err = new Error("Habit not found");
+    err.status = 404;
+    err.code = "HABIT_NOT_FOUND";
+    throw err;
+  }
+
+  return { ok: true };
+}
+
 async function completeHabit(userId, habitId, date) {
   // 1) Ownership + not archived
   const habits = await query(
@@ -258,4 +286,4 @@ async function getHabits(userId) {
     return habits;
 }
 
-module.exports = { createHabit, completeHabit, uncompleteHabit, getHabits, getHabitSummary };
+module.exports = { createHabit, deleteHabit, completeHabit, uncompleteHabit, getHabits, getHabitSummary };

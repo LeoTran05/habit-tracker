@@ -19,14 +19,22 @@ export async function createHabit(name) {
   });
 }
 
+export async function deleteHabit(habitId) {
+  return apiFetch(`/api/habits/${habitId}`, {
+    method: "DELETE",
+  });
+}
+
 export async function completeHabit(habitId, date) {
+  // Your backend supports optional date in body (you already implemented this)
   return apiFetch(`/api/habits/${habitId}/complete`, {
     method: "POST",
-    body: date ? { date } : {}, // backend defaults to today
+    body: date ? { date } : {},
   });
 }
 
 export async function uncompleteHabit(habitId, date) {
+  // Your DELETE expects date in query string (you implemented req.query.date)
   const qs = date ? `?date=${encodeURIComponent(date)}` : "";
   return apiFetch(`/api/habits/${habitId}/complete${qs}`, {
     method: "DELETE",

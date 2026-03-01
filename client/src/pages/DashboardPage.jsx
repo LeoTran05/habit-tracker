@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   getHabitSummary,
   createHabit,
+  deleteHabit,
   completeHabit,
   uncompleteHabit,
 } from "../api/habits.api";
@@ -97,6 +98,21 @@ export default function DashboardPage() {
     }
   }
 
+  async function handleDeleteHabit(habitId) {
+    const ok = window.confirm("Are you sure you want to delete this habit?");
+    if (!ok) return;
+
+    setError("");
+    try {
+      await deleteHabit(habitId);
+      await refresh();
+    } catch (e) {
+      setError(e.message);
+    }
+
+  }
+
+
   if (!summary) {
     return (
       <div style={{ padding: 40, fontFamily: "system-ui" }}>
@@ -168,50 +184,80 @@ export default function DashboardPage() {
 
       {error && <p style={{ color: "red" }}>{error}</p>}
 
+
+      // Habit summary list
       <div style={{ display: "grid", gap: 12 }}>
         {summary.habits.map((h) => (
           <div
-            key={h.id}
-            style={{
-              padding: 12,
-              borderRadius: 10,
-              background: "#5D737E",
-              color: "#e5e7eb",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 16,
-            }}
-          >
-            <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 700 }}>{h.name}</div>
-
-              <div style={{ marginTop: 10, display: "flex", gap: 8 }}>
-                {h.last7.map((d) => (
-                  <DayDot
-                    key={d.date}
-                    date={d.date}
-                    done={d.done}
-                    isAsOf={(asOf || summary.range.to) === d.date}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <button
-              onClick={() => toggleDoneForAsOf(h)}
+              key={h.id}
               style={{
-                padding: "10px 14px",
-                borderRadius: 8,
-                border: "1px solid #374151",
-                background: h.doneToday ? "#16a34a" : "#7D4E57",
-                color: "#fff",
-                minWidth: 140,
+                position: "relative", // add
+                padding: 12,
+                borderRadius: 10,
+                background: "#5D737E",
+                color: "#e5e7eb",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 16,
               }}
             >
-              {h.doneToday ? "Done ✅" : "Mark done"}
-            </button>
-          </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 700 }}>{h.name}</div>
+
+                <div style={{ marginTop: 10, display: "flex", gap: 8 }}>
+                  {h.last7.map((d) => (
+                    <DayDot
+                      key={d.date}
+                      date={d.date}
+                      done={d.done}
+                      isAsOf={(asOf || summary.range.to) === d.date}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => handleDeleteHabit(h.id)}
+                title="Delete habit"
+                aria-label={`Delete ${h.name}`}
+                style={{
+                  position: "absolute",   // add
+                  top: 6,                 // move up/down
+                  right: 8,               // move left/right
+                  width: 28,              // bigger click target
+                  height: 28,             // bigger click target
+                  borderRadius: 999,
+                  border: "none",
+                  background: "transparent",
+                  color: "#ef4444",
+                  fontSize: 24,           // bigger X
+                  lineHeight: 1,
+                  cursor: "pointer",
+                  display: "grid",
+                  placeItems: "center",
+                  padding: 0,
+                }}
+              >
+                ×
+              </button>
+
+              <button
+                onClick={() => toggleDoneForAsOf(h)}
+                style={{
+                  padding: "10px 14px",
+                  borderRadius: 8,
+                  border: "1px solid #374151",
+                  background: h.doneToday ? "#16a34a" : "#7D4E57",
+                  color: "#fff",
+                  minWidth: 140,
+                }}
+              >
+                {h.doneToday ? "Done ✅" : "Mark done"}
+              </button>
+            </div>
+
         ))}
       </div>
     </div>
