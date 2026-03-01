@@ -18,7 +18,7 @@ function weekdayShort(isoDate) {
 function DayDot({ date, done, isAsOf }) {
   return (
     <div style={{ textAlign: "center", width: 34 }}>
-      <div style={{ fontSize: 12, color: "#9ca3af" }}>{weekdayShort(date)}</div>
+      <div style={{ fontSize: 12, color: done ? "#22c55e" : "#000000" }}>{weekdayShort(date)}</div>
       <span
         title={date}
         style={{
@@ -161,7 +161,7 @@ export default function DashboardPage() {
         />
       </div>
 
-      <div style={{ marginBottom: 10, color: "#ffffff" }}>
+      <div style={{ marginBottom: 10, color: "#000000" }}>
         Range: {summary.range.from} → {summary.range.to} (asOf: {asOfLabel})
       </div>
 
@@ -185,27 +185,27 @@ export default function DashboardPage() {
       {error && <p style={{ color: "red" }}>{error}</p>}
 
 
-      // Habit summary list
-      <div style={{ display: "grid", gap: 12 }}>
+      <div style={{ display: "grid", gap: 10, justifyItems: "start" }}>
         {summary.habits.map((h) => (
           <div
               key={h.id}
               style={{
                 position: "relative", // add
-                padding: 12,
+                width: "min(100%, 700px)",
+                padding: 10,
                 borderRadius: 10,
                 background: "#5D737E",
                 color: "#e5e7eb",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                gap: 16,
+                gap: 12,
               }}
             >
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 700 }}>{h.name}</div>
 
-                <div style={{ marginTop: 10, display: "flex", gap: 8 }}>
+                <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
                   {h.last7.map((d) => (
                     <DayDot
                       key={d.date}
@@ -246,12 +246,12 @@ export default function DashboardPage() {
               <button
                 onClick={() => toggleDoneForAsOf(h)}
                 style={{
-                  padding: "10px 14px",
+                  padding: "8px 12px",
                   borderRadius: 8,
                   border: "1px solid #374151",
                   background: h.doneToday ? "#16a34a" : "#7D4E57",
                   color: "#fff",
-                  minWidth: 140,
+                  minWidth: 120,
                 }}
               >
                 {h.doneToday ? "Done ✅" : "Mark done"}

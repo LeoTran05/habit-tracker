@@ -44,11 +44,17 @@ export default function ArchivedPage() {
         {habits.map((h) => (
           <div
             key={h.id}
-            style={{
-              padding: 12,
-              borderRadius: 10,
-              background: "#5D737E",
-              color: "#e5e7eb",
+              style={{
+                position: "relative", // add
+                width: "min(100%, 700px)",
+                padding: 10,
+                borderRadius: 10,
+                background: "#5D737E",
+                color: "#e5e7eb",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 12,
             }}
           >
             <div style={{ fontWeight: 700 }}>{h.name}</div>
