@@ -19,6 +19,10 @@ export async function createHabit(name) {
   });
 }
 
+export async function getArchivedHabits() {
+  return apiFetch("/api/habits/archived");
+}
+
 export async function deleteHabit(habitId) {
   return apiFetch(`/api/habits/${habitId}`, {
     method: "DELETE",

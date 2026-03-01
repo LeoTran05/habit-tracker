@@ -7,7 +7,15 @@
 
 const express = require("express");
 const { requireAuth } = require("../middleware/auth");
-const { createHabit, deleteHabit, completeHabit, uncompleteHabit, getHabits, getHabitSummary} = require("../services/habits.service");
+const {
+  createHabit,
+  deleteHabit,
+  completeHabit,
+  uncompleteHabit,
+  getHabits,
+  getHabitSummary,
+  getArchivedHabits,
+} = require("../services/habits.service");
 const { apiError } = require("../utils/errors");
 const router = express.Router();
 
@@ -91,6 +99,20 @@ router.get("/", requireAuth, async (req, res) => {
   try {
     const userId = req.user.id;
     const habits = await getHabits(userId);
+    return res.status(200).json({ habits });
+  } catch (err) {
+    const status = err.status || 500;
+    const code = err.code || "INTERNAL_ERROR";
+    const message = err.message || "Something went wrong";
+    return apiError(res, status, code, message);
+  }
+});
+
+// GET /api/habits/archived - Get archived habits for authenticated user
+router.get("/archived", requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const habits = await getArchivedHabits(userId);
     return res.status(200).json({ habits });
   } catch (err) {
     const status = err.status || 500;

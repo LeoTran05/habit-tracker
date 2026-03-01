@@ -286,4 +286,25 @@ async function getHabits(userId) {
     return habits;
 }
 
-module.exports = { createHabit, deleteHabit, completeHabit, uncompleteHabit, getHabits, getHabitSummary };
+async function getArchivedHabits(userId) {
+  const habits = await query(
+    `
+    SELECT id, name, frequency, created_at, archived_at
+    FROM habits
+    WHERE user_id = $1 AND archived_at IS NOT NULL
+    ORDER BY archived_at DESC
+    `,
+    [userId]
+  );
+  return habits;
+}
+
+module.exports = {
+  createHabit,
+  deleteHabit,
+  completeHabit,
+  uncompleteHabit,
+  getHabits,
+  getHabitSummary,
+  getArchivedHabits,
+};

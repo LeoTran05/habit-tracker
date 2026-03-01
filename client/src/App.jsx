@@ -1,19 +1,87 @@
-/** 
- * Main application component that sets up routing for the app.
- * - "/" route for login page
- * - "/dashboard" route for the main dashboard (protected)
- */
-
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  NavLink,
+  Navigate,
+  Outlet,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
+import ArchivedPage from "./pages/ArchivedPage";
+import "./App.css";
+
+function pageTitle(pathname) {
+  if (pathname.startsWith("/dashboard")) return "Dashboard";
+  if (pathname.startsWith("/archived")) return "Archived";
+  return "App";
+}
+
+function ProtectedLayout() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  function handleLogout() {
+    localStorage.removeItem("token");
+    navigate("/login", { replace: true });
+  }
+
+  return (
+    <div className="app-shell">
+      <header className="top-header">
+        <div className="header-title">{pageTitle(location.pathname)}</div>
+        <nav className="header-nav">
+          <NavLink
+            to="/dashboard"
+            className={({ isActive }) => `nav-tab ${isActive ? "active" : ""}`}
+          >
+            Dashboard
+          </NavLink>
+          <NavLink
+            to="/archived"
+            className={({ isActive }) => `nav-tab ${isActive ? "active" : ""}`}
+          >
+            Archived
+          </NavLink>
+          <button type="button" onClick={handleLogout} className="logout-btn">
+            Logout
+          </button>
+        </nav>
+      </header>
+
+      <main className="page-content">
+        <Outlet />
+      </main>
+    </div>
+  );
+}
 
 export default function App() {
+  const token = localStorage.getItem("token");
+
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/LoginPage" element={<LoginPage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+
+        <Route element={<ProtectedLayout />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/archived" element={<ArchivedPage />} />
+        </Route>
+
+        <Route
+          path="*"
+          element={<Navigate to={token ? "/dashboard" : "/login"} replace />}
+        />
       </Routes>
     </BrowserRouter>
   );

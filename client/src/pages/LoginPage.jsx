@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { login } from "../api/auth.api";
 
 export default function LoginPage() {
@@ -38,6 +38,9 @@ export default function LoginPage() {
         <br /><br />
         <button type="submit">Login</button>
       </form>
+      <p style={{ marginTop: 12 }}>
+        Need an account? <Link to="/register">Register</Link>
+      </p>
       {error && <p style={{ color: "red" }}>{error}</p>}
     </div>
   );
