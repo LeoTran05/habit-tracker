@@ -187,6 +187,34 @@ async function uncompleteHabit(userId, habitId, date) {
 
 } 
 
+async function updateHabitName(userId, habitId, newName) {
+    if (!newName || typeof newName !== "string" || newName.trim() === "") {
+        const err = new Error("New habit name is required and must be a non-empty string");
+        err.status = 400;
+        err.code = "VALIDATION_ERROR";
+        throw err;
+    }
+
+    const result = await query(
+        `
+        UPDATE habits
+        SET name = $1
+        WHERE id = $2 AND user_id = $3 AND archived_at IS NULL
+        RETURNING id, name, frequency, created_at, archived_at;
+        `,
+        [newName.trim(), habitId, userId]
+    );
+
+    if (result.length === 0) {
+        const err = new Error("Habit not found or not accessible");
+        err.status = 404;
+        err.code = "HABIT_NOT_FOUND";
+        throw err;
+    }
+
+    return result[0];
+  } 
+
 async function getHabitSummary(userId, asOf) {
   const toISODate = (d) => d.toISOString().slice(0, 10);
 
@@ -304,6 +332,7 @@ module.exports = {
   deleteHabit,
   completeHabit,
   uncompleteHabit,
+  updateHabitName,
   getHabits,
   getHabitSummary,
   getArchivedHabits,

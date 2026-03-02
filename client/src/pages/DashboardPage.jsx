@@ -5,20 +5,21 @@ import {
   deleteHabit,
   completeHabit,
   uncompleteHabit,
+  updateHabitName,
 } from "../api/habits.api";
 
-// Turn YYYY-MM-DD into "Mon" etc (local display only)
 function weekdayShort(isoDate) {
   const [y, m, d] = isoDate.split("-").map(Number);
   const dt = new Date(Date.UTC(y, m - 1, d));
   return dt.toLocaleDateString(undefined, { weekday: "short" });
 }
 
-// A single day dot in the UI, showing weekday, date, and done/not done. Also highlights if it’s the current “asOf” date you’re looking at. Used in the habit summary list below. You can make this fancier with icons or colors if you like!
 function DayDot({ date, done, isAsOf }) {
   return (
     <div style={{ textAlign: "center", width: 34 }}>
-      <div style={{ fontSize: 12, color: done ? "#22c55e" : "#000000" }}>{weekdayShort(date)}</div>
+      <div style={{ fontSize: 12, color: done ? "#22c55e" : "#000000" }}>
+        {weekdayShort(date)}
+      </div>
       <span
         title={date}
         style={{
@@ -39,14 +40,13 @@ function DayDot({ date, done, isAsOf }) {
   );
 }
 
-// The main dashboard page, showing the habit summary and allowing creating/toggling habits. This is the default page after login. It uses the API functions defined in ../api/habits.api.js to interact with the backend.
 export default function DashboardPage() {
   const [summary, setSummary] = useState(null);
   const [newName, setNewName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [openMenuHabitId, setOpenMenuHabitId] = useState(null);
 
-  // DEV “pretend today” date (defaults to backend “today” if empty)
   const [asOf, setAsOf] = useState(() => localStorage.getItem("dev_asof") || "");
 
   async function refresh(nextAsOf = asOf) {
@@ -82,11 +82,10 @@ export default function DashboardPage() {
     }
   }
 
-  // Toggle done/not done for the given habit and current asOf date. If asOf is empty, backend treats it as today. 
   async function toggleDoneForAsOf(habit) {
     setError("");
     try {
-      const date = asOf || undefined; // if empty, backend defaults to today
+      const date = asOf || undefined;
       if (habit.doneToday) {
         await uncompleteHabit(habit.id, date);
       } else {
@@ -109,27 +108,52 @@ export default function DashboardPage() {
     } catch (e) {
       setError(e.message);
     }
-
   }
 
+  async function handleUpdateHabitName(habitId, nextName) {
+    setError("");
+    try {
+      await updateHabitName(habitId, nextName);
+      await refresh();
+    } catch (e) {
+      setError(e.message);
+    }
+  }
+
+  async function handleRenameFromMenu(habit) {
+    const nextName = window.prompt("Rename habit", habit.name);
+    if (nextName === null) return;
+
+    const trimmed = nextName.trim();
+    if (!trimmed) {
+      setError("Habit name is required and must be a non-empty string");
+      return;
+    }
+
+    if (trimmed === habit.name) {
+      setOpenMenuHabitId(null);
+      return;
+    }
+
+    await handleUpdateHabitName(habit.id, trimmed);
+    setOpenMenuHabitId(null);
+  }
 
   if (!summary) {
     return (
       <div style={{ padding: 40, fontFamily: "system-ui" }}>
-        <h1>Dashboard</h1>
-        <p>Loading…</p>
+        <p>Loading...</p>
         {error && <p style={{ color: "red" }}>{error}</p>}
       </div>
     );
   }
 
-  const asOfLabel = asOf ? asOf : summary.range.to; // display what you’re using
+  const asOfLabel = asOf ? asOf : summary.range.to;
 
   return (
     <div style={{ padding: 40, fontFamily: "system-ui" }}>
-      <h1>Dashboard</h1>
-
-      {/* DEV DATE CONTROL */}
+      <h1 style={{ color: "#ffffff" }}>Hello, Today is: {asOfLabel}</h1>
+      
       <div
         style={{
           marginBottom: 14,
@@ -146,7 +170,7 @@ export default function DashboardPage() {
         }}
       >
         <div>
-          <div style={{ fontWeight: 700 }}>Dev date (pretend “today”)</div>
+          <div style={{ fontWeight: 700 }}>Dev date (pretend "today")</div>
           <div style={{ fontSize: 12, color: "#ffffff" }}>
             Used for summary + marking done. Leave blank to use real today.
           </div>
@@ -162,7 +186,7 @@ export default function DashboardPage() {
       </div>
 
       <div style={{ marginBottom: 10, color: "#000000" }}>
-        Range: {summary.range.from} → {summary.range.to} (asOf: {asOfLabel})
+        Range: {summary.range.from} - {summary.range.to} (asOf: {asOfLabel})
       </div>
 
       <form onSubmit={handleAddHabit} style={{ marginBottom: 16 }}>
@@ -184,55 +208,63 @@ export default function DashboardPage() {
 
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-
       <div style={{ display: "grid", gap: 10, justifyItems: "start" }}>
         {summary.habits.map((h) => (
           <div
-              key={h.id}
+            key={h.id}
+            style={{
+              position: "relative",
+              width: "min(100%, 700px)",
+              padding: 10,
+              borderRadius: 10,
+              background: "#5D737E",
+              color: "#e5e7eb",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 12,
+            }}
+          >
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 700 }}>{h.name}</div>
+
+              <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
+                {h.last7.map((d) => (
+                  <DayDot
+                    key={d.date}
+                    date={d.date}
+                    done={d.done}
+                    isAsOf={(asOf || summary.range.to) === d.date}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div
               style={{
-                position: "relative", // add
-                width: "min(100%, 700px)",
-                padding: 10,
-                borderRadius: 10,
-                background: "#5D737E",
-                color: "#e5e7eb",
+                position: "absolute",
+                top: 6,
+                right: 8,
                 display: "flex",
+                gap: 6,
                 alignItems: "center",
-                justifyContent: "space-between",
-                gap: 12,
               }}
             >
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 700 }}>{h.name}</div>
-
-                <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
-                  {h.last7.map((d) => (
-                    <DayDot
-                      key={d.date}
-                      date={d.date}
-                      done={d.done}
-                      isAsOf={(asOf || summary.range.to) === d.date}
-                    />
-                  ))}
-                </div>
-              </div>
-
               <button
                 type="button"
-                onClick={() => handleDeleteHabit(h.id)}
-                title="Delete habit"
-                aria-label={`Delete ${h.name}`}
+                onClick={() =>
+                  setOpenMenuHabitId((curr) => (curr === h.id ? null : h.id))
+                }
+                title="Habit settings"
+                aria-label={`Open settings for ${h.name}`}
                 style={{
-                  position: "absolute",   // add
-                  top: 6,                 // move up/down
-                  right: 8,               // move left/right
-                  width: 28,              // bigger click target
-                  height: 28,             // bigger click target
+                  width: 28,
+                  height: 28,
                   borderRadius: 999,
-                  border: "none",
-                  background: "transparent",
-                  color: "#ef4444",
-                  fontSize: 24,           // bigger X
+                  border: "1px solid #374151",
+                  background: "#11151C",
+                  color: "#e5e7eb",
+                  fontSize: 14,
                   lineHeight: 1,
                   cursor: "pointer",
                   display: "grid",
@@ -240,24 +272,81 @@ export default function DashboardPage() {
                   padding: 0,
                 }}
               >
-                ×
+                {"\u2699"}
               </button>
 
               <button
-                onClick={() => toggleDoneForAsOf(h)}
+                type="button"
+                onClick={() => handleDeleteHabit(h.id)}
+                title="Delete habit"
+                aria-label={`Delete ${h.name}`}
                 style={{
-                  padding: "8px 12px",
-                  borderRadius: 8,
-                  border: "1px solid #374151",
-                  background: h.doneToday ? "#16a34a" : "#7D4E57",
-                  color: "#fff",
-                  minWidth: 120,
+                  width: 28,
+                  height: 28,
+                  borderRadius: 999,
+                  border: "none",
+                  background: "transparent",
+                  color: "#ef4444",
+                  fontSize: 24,
+                  lineHeight: 1,
+                  cursor: "pointer",
+                  display: "grid",
+                  placeItems: "center",
+                  padding: 0,
                 }}
               >
-                {h.doneToday ? "Done ✅" : "Mark done"}
+                x
               </button>
+
+              {openMenuHabitId === h.id && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 34,
+                    right: 0,
+                    minWidth: 130,
+                    borderRadius: 8,
+                    border: "1px solid #374151",
+                    background: "#11151C",
+                    boxShadow: "0 8px 20px rgba(0,0,0,0.35)",
+                    padding: 6,
+                    zIndex: 10,
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => handleRenameFromMenu(h)}
+                    style={{
+                      width: "100%",
+                      textAlign: "left",
+                      padding: "8px 10px",
+                      borderRadius: 6,
+                      border: "none",
+                      background: "transparent",
+                      color: "#e5e7eb",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Rename
+                  </button>
+                </div>
+              )}
             </div>
 
+            <button
+              onClick={() => toggleDoneForAsOf(h)}
+              style={{
+                padding: "8px 12px",
+                borderRadius: 8,
+                border: "1px solid #374151",
+                background: h.doneToday ? "#16a34a" : "#7D4E57",
+                color: "#fff",
+                minWidth: 120,
+              }}
+            >
+              {h.doneToday ? "Done" : "Mark done"}
+            </button>
+          </div>
         ))}
       </div>
     </div>

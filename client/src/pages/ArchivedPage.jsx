@@ -25,7 +25,7 @@ export default function ArchivedPage() {
   if (loading) {
     return (
       <div style={{ padding: 40, fontFamily: "system-ui" }}>
-        <h1>Archived</h1>
+        <h1>Archived Habits</h1>
         <p>Loading...</p>
       </div>
     );
@@ -33,7 +33,7 @@ export default function ArchivedPage() {
 
   return (
     <div style={{ padding: 40, fontFamily: "system-ui" }}>
-      <h1>Archived Habits</h1>
+      
       {error && <p style={{ color: "red" }}>{error}</p>}
 
       {!error && habits.length === 0 && (

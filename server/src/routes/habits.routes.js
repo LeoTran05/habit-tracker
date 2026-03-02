@@ -12,6 +12,7 @@ const {
   deleteHabit,
   completeHabit,
   uncompleteHabit,
+  updateHabitName,
   getHabits,
   getHabitSummary,
   getArchivedHabits,
@@ -150,5 +151,25 @@ router.get("/summary", requireAuth, async (req, res) => {
   }
 });
 
+// PATCH /api/habits/:id - Update habit name
+router.patch("/:id", requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const habitId = Number(req.params.id);
+    const { name } = req.body || {};
+
+    if (!name || typeof name !== "string" || name.trim() === "") {
+      return apiError(res, 400, "VALIDATION_ERROR", "Habit name is required and must be a non-empty string");
+    }
+
+    const result = await updateHabitName(userId, habitId, name);
+    return res.status(200).json(result);
+  } catch (err) {
+    const status = err.status || 500;
+    const code = err.code || "INTERNAL_ERROR";
+    const message = err.message || "Something went wrong";
+    return apiError(res, status, code, message);
+  }
+});
 
 module.exports = router;

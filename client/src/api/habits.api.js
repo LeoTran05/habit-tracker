@@ -44,3 +44,10 @@ export async function uncompleteHabit(habitId, date) {
     method: "DELETE",
   });
 }
+
+export async function updateHabitName(habitId, newName) {
+  return apiFetch(`/api/habits/${habitId}`, {
+    method: "PATCH",
+    body: { name: newName },
+  });
+}
