@@ -275,28 +275,47 @@ export default function DashboardPage() {
                 {"\u2699"}
               </button>
 
-              <button
+             <button
                 type="button"
                 onClick={() => handleDeleteHabit(h.id)}
                 title="Delete habit"
                 aria-label={`Delete ${h.name}`}
                 style={{
+                  position: "relative",
                   width: 28,
                   height: 28,
-                  borderRadius: 999,
                   border: "none",
                   background: "transparent",
-                  color: "#ef4444",
-                  fontSize: 24,
-                  lineHeight: 1,
                   cursor: "pointer",
-                  display: "grid",
-                  placeItems: "center",
                   padding: 0,
                 }}
               >
-                x
+                <span
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    borderRadius: 999,
+                    background: "#11151C",
+                    boxShadow: "0 8px 20px rgba(0,0,0,0.35)",
+  
+                  }}
+                />
+                <span
+                  style={{
+                    position: "relative",
+                    zIndex: 1,
+                    color: "#ef4444",
+                    fontSize: 24,
+                    lineHeight: "28px",
+                    display: "block",
+                    textAlign: "center",
+                    transform: "translateY(-3px)",
+                  }}
+                >
+                  x
+                </span>
               </button>
+
 
               {openMenuHabitId === h.id && (
                 <div
