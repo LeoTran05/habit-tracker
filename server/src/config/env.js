@@ -30,6 +30,4 @@ function loadEnv() {
   };
 }
 
-
-
 module.exports = { loadEnv, requireEnv };
