@@ -7,13 +7,13 @@ function joinUrl(base, path) {
 }
 
 export async function apiFetch(path, { method = "GET", body } = {}) {
-  console.log("apiFetch URL:", url);
   const token = localStorage.getItem("token");
 
   const headers = { "Content-Type": "application/json" };
   if (token) headers.Authorization = `Bearer ${token}`;
 
   const url = joinUrl(API_BASE_URL, path);
+  console.log("apiFetch URL:", url);
 
   const res = await fetch(url, {
     method,
