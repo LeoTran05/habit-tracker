@@ -21,7 +21,7 @@ export default function LoginPage() {
 
   return (
     <div style={{ padding: 40 }}>
-      <h1>Login</h1>
+      <h1>Welcome, please login</h1>
       <form onSubmit={handleLogin}>
         <input
           value={email}

@@ -26,7 +26,7 @@ export default function RegisterPage() {
 
   return (
     <div style={{ padding: 40 }}>
-      <h1>Register</h1>
+      <h1>Create an account</h1>
       <form onSubmit={handleRegister}>
         <input
           value={email}
