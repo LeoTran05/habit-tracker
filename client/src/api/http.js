@@ -13,7 +13,7 @@ export async function apiFetch(path, { method = "GET", body } = {}) {
   if (token) headers.Authorization = `Bearer ${token}`;
 
   const url = joinUrl(API_BASE_URL, path);
-  console.log("apiFetch URL:", url);
+  //console.log("apiFetch URL:", url);
 
   const res = await fetch(url, {
     method,
