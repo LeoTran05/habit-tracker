@@ -8,6 +8,8 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  console.log("VITE_API_BASE_URL:", import.meta.env.VITE_API_BASE_URL);
+
   async function handleLogin(e) {
     e.preventDefault();
     try {
