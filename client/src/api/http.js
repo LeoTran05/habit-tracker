@@ -1,35 +1,35 @@
-/**
- * Small HTTP helper for calling the backend API.
- * - Adds JSON headers
- * - Adds Authorization header if token exists
- * - Parses JSON
- * - Throws a readable error on non-2xx responses
- */
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
+
+function joinUrl(base, path) {
+  const b = base.replace(/\/+$/, "");
+  const p = path.startsWith("/") ? path : `/${path}`;
+  return `${b}${p}`;
+}
 
 export async function apiFetch(path, { method = "GET", body } = {}) {
-  const token = localStorage.getItem("token"); // store the token in localStorage so browser keeps it across page reloads and sessions
+  console.log("apiFetch URL:", url);
+  const token = localStorage.getItem("token");
 
-  const headers = {
-    "Content-Type": "application/json",
-  };
+  const headers = { "Content-Type": "application/json" };
+  if (token) headers.Authorization = `Bearer ${token}`;
 
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
+  const url = joinUrl(API_BASE_URL, path);
 
-  const res = await fetch(path, { //wait for the response from the fetch call
+  const res = await fetch(url, {
     method,
     headers,
     body: body ? JSON.stringify(body) : undefined,
   });
 
-  // Try to parse JSON (even for errors)
-  const data = await res.json().catch(() => null);
+  let data = null;
+  try {
+    data = await res.json();
+  } catch {}
 
-  if (!res.ok) { //status code is not in the 200-299 range
-    const message =
-      data?.error?.message || data?.message || `Request failed (${res.status})`;
-    throw new Error(message);
+  if (!res.ok) {
+    throw new Error(
+      data?.error?.message || data?.message || `Request failed (${res.status})`
+    );
   }
 
   return data;
